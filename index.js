@@ -5,11 +5,15 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildVoiceStates // 🔊 مهم جداً لمراقبة انضمام ومغادرة الرومات الصوتية
     ]
 });
 
 const TOKEN = process.env.TOKEN;
+
+// تخزين مؤقت للرومات المؤقتة عشان نحذفها إذا فاضت
+const tempVoiceChannels = new Set();
 
 client.once('ready', () => {
     console.log(`🔥 Sold Platform Full Bot is online: ${client.user.tag}`);
@@ -66,7 +70,7 @@ client.on('messageCreate', async message => {
             "𝐃𝐂 | مسؤول العصابات", "𝐃𝐂 | مسؤول المتجر", "𝗕𝗲𝘁𝗮 𝗧𝗲𝘀𝘁𝗲𝗿", "𝐃𝐂 | 𝗦𝘁𝗮𝗳𝗳 𝗙𝗿𝗶𝗲𝗻𝗱", "𝐃𝐂 | 𝗙𝗿𝗶𝗲𝗻𝗱",
             "𝐃𝐂 | 𝗥𝗲𝘀𝗽𝗲𝗰𝘁", "𝐃𝐂 | 𝗦𝘁𝗿𝗲𝗮𝗺𝗲𝗿", "𝐃𝐂 | 𝗗𝗼𝗻𝗮𝘁𝗲𝗿🧡", "Police Chief", "Deputy Police Chief", "Marines Chief",
             "Deputy Marines Chief", "Police Academy Commander", "𝐃𝐂 | LSPD", "𝐃𝐂 | Marines", "𝗚𝗦𝗚 𝗢𝗚", "𝗕𝗹𝗼𝗼𝗱𝘇 𝗢𝗚",
-            "𝗖rip𝘀 𝗢𝗚", "𝗧𝗵𝗲 𝗟𝗼𝘀𝘁 𝗢𝗚", "𝐃𝐂 | 𝗚𝗮𝗻𝗴𝘀𝘁𝗲𝗿", "𝐃𝐂 | Citizen", "⁂", "☆", "|ـــــــــــــــــ{ 𝗛𝗶𝗴𝗵𝗲𝗿 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁 }ـــــــــــــــــ|",
+            "𝗖𝗿𝗶𝗽𝘀 𝗢𝗚", "𝗧𝗵𝗲 𝗟𝗼𝘀𝘁 𝗢𝗚", "𝐃𝐂 | 𝗚𝗮𝗻𝗴𝘀𝘁𝗲𝗿", "𝐃𝐂 | Citizen", "⁂", "☆", "|ـــــــــــــــــ{ 𝗛𝗶𝗴𝗵𝗲𝗿 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁 }ـــــــــــــــــ|",
             "|| 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁 𝗧𝗲𝗮𝗺 ||", "|ـــــــــــــــــ{ 𝗦𝘁𝗮𝗳𝗳 }ـــــــــــــــــ|", "|ـــــــــــــــــ{ 𝗠𝗮𝗻𝗮𝗴𝗲𝗿 }ـــــــــــــــــ|",
             "𝐃𝐂 | مسؤول السبناريوهات", "|ـــــــــــــــــ{ 𝗦𝘁𝗮𝗳𝗳 𝗗𝗲𝗽𝗮𝗿𝘁𝗺𝗲𝗻𝘁𝘀 }ـــــــــــــــــ|", "𝐃𝐂 | مسؤول الدعم الفني",
             "𝐃𝐂 | مسؤول الباند", "𝐃𝐂 | مسؤول المقابلات الادارية", "𝐃𝐂 | مسؤول الرقابة والتفتيش", "𝐃𝐂 | فريق الدعم الفني",
@@ -283,7 +287,15 @@ client.on('messageCreate', async message => {
             },
             {
                 category: "🎧 | Voice",
-                channels: [{ name: "🔒 Private | 1", type: "voice" }, { name: "🔒 Private | 2", type: "voice" }, { name: "🔒 Private | 3", type: "voice" }, { name: "🔒 Private | 4", type: "voice" }, { name: "🔒 Private | 5", type: "voice" }, { name: "🌍 The World 🌍", type: "voice" }, { name: "🤖 ZMN Create voice", type: "voice" }]
+                channels: [
+                    { name: "🔒 Private | 1", type: "voice" }, 
+                    { name: "🔒 Private | 2", type: "voice" }, 
+                    { name: "🔒 Private | 3", type: "voice" }, 
+                    { name: "🔒 Private | 4", type: "voice" }, 
+                    { name: "🔒 Private | 5", type: "voice" }, 
+                    { name: "🌍 The World 🌍", type: "voice" }, 
+                    { name: "🤖 ZMN Create voice", type: "voice" } // 👈 هذا الروم المخصص لتوليد الرومات تلقائياً
+                ]
             },
             {
                 category: "Moderation",
@@ -298,6 +310,47 @@ client.on('messageCreate', async message => {
         await buildRoles(message.guild, zmnRoles);
         await buildStructure(message.guild, zmnStructure);
         message.channel.send('✅ **تم إنشاء السيرفر الخاص (ZMN) بالكامل بنجاح 100%!**');
+    }
+});
+
+// ==========================================================
+// 🔊 نظام التوليد التلقائي للرومات الصوتية (Join to Create Voice)
+// ==========================================================
+client.on('voiceStateUpdate', async (oldState, newState) => {
+    try {
+        const member = newState.member;
+        const guild = newState.guild;
+
+        // إذا دخل العضو روم "🤖 ZMN Create voice"
+        if (newState.channel && newState.channel.name === "🤖 ZMN Create voice") {
+            // إنشاء روم جديد باسم العضو في نفس القسم
+            const category = newState.channel.parent;
+            const createdChannel = await guild.channels.create({
+                name: `🔊│روم ${member.user.username}`,
+                type: ChannelType.GuildVoice,
+                parent: category ? category.id : null,
+                permissionOverwrites: [
+                    {
+                        id: member.id,
+                        allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.MoveMembers] // العضو يتحكم برومه
+                    }
+                ]
+            });
+
+            // نقل العضو فوراً إلى رومه الجديد
+            await member.voice.setChannel(createdChannel);
+            tempVoiceChannels.add(createdChannel.id);
+        }
+
+        // إذا طلع العضو من روم مؤقت وصار الروم فاضي، البوت يحذفه تلقائياً
+        if (oldState.channel && tempVoiceChannels.has(oldState.channel.id)) {
+            if (oldState.channel.members.size === 0) {
+                tempVoiceChannels.delete(oldState.channel.id);
+                await oldState.channel.delete().catch(() => {});
+            }
+        }
+    } catch (error) {
+        console.error("Voice state update error:", error);
     }
 });
 
