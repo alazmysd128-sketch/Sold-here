@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits }  = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -13,9 +13,8 @@ const TOKEN = process.env.TOKEN;
 
 client.once('ready', async () => {
     console.log(`🔥 Bot is online: ${client.user.tag}`);
-    
     client.user.setPresence({
-        activities: [{ name: 'خدمة سولد الفاخرة 🚀', type: 3 }],
+        activities: [{ name: 'تحكم سولد الملكي 🚀', type: 3 }],
         status: 'online',
     });
 });
@@ -37,6 +36,7 @@ client.on('guildMemberAdd', async member => {
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
+    // 1. أمر إنشاء روم مفرد على كيفك: !makerom اسم-الروم
     if (message.content.startsWith('!makerom')) {
         if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return message.reply('❌ ما عندك صلاحية لإدارة الرومات يا بطل!');
@@ -46,7 +46,7 @@ client.on('messageCreate', async message => {
         const roomName = args.slice(1).join('-');
 
         if (!roomName) {
-            return message.reply('⚠️ اكتب اسم الروم بعد الأمر، مثلاً: `!makerom سوالف`');
+            return message.reply('⚠️ اكتب اسم الروم بعد الأمر، مثلاً: `!makerom لوجي`');
         }
 
         try {
@@ -63,51 +63,47 @@ client.on('messageCreate', async message => {
         }
     }
 
-    if (message.content === '!setup') {
+    // 2. أمر السيت أب بالأسماء اللي تختارها أنت!
+    // الطريقة: اكتب !setup بعدين حط الأسامي مفصولة بمسافة، مثلاً:
+    // !setup قوانين ترحيب سوالف
+    if (message.content.startsWith('!setup')) {
         if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-            return message.reply('❌ هذا الأمر خاص بالمسؤولين (أدمن) فقط!');
+            return message.reply('❌ هذا الأمر خاص بالمسؤولين فقط!');
+        }
+
+        const args = message.content.split(' ').slice(1); // ناخذ الأسماء اللي كتبتها بعد !setup
+
+        if (args.length === 0) {
+            return message.reply('⚠️ يرجى كتابة أسماء الرومات بعد الأمر يا فخم!\nمثال: `!setup قوانين الترحيب السوالف`');
         }
 
         try {
             const guild = message.guild;
-            message.reply('⏳ جاري إنشاء رومات وأقسام السيرفر الفاخرة...');
+            message.reply(`⏳ جاري إنشاء قسم خاص وروماتك المطلوبة (${args.join(', ')})...`);
 
+            // إنشاء قسم خاص يجمع روماتك
             const category = await guild.channels.create({
-                name: '🌟 ┫ منطقة سولد الخاصة',
+                name: '🌟 ┫ رومات سولد المختارة',
                 type: ChannelType.GuildCategory,
             });
 
-            await guild.channels.create({
-                name: '📢-الأنظباط-والقوانين',
-                type: ChannelType.GuildText,
-                parent: category.id,
-            });
+            // إنشاء الرومات بالأسماء اللي أنت حددتها حرفياً
+            for (const name of args) {
+                await guild.channels.create({
+                    name: name,
+                    type: ChannelType.GuildText,
+                    parent: category.id,
+                });
+            }
 
-            await guild.channels.create({
-                name: '🎉-الترحيب',
-                type: ChannelType.GuildText,
-                parent: category.id,
-            });
-
-            await guild.channels.create({
-                name: '💬-سوالف-الشباب',
-                type: ChannelType.GuildText,
-                parent: category.id,
-            });
-
-            await guild.channels.create({
-                name: '🎧 ┫ سولف صوتي',
-                type: ChannelType.GuildVoice,
-                parent: category.id,
-            });
-
-            message.channel.send('✅ تم تعديل وترتيب السيرفر وإنشاء الرومات بنجاح يا فخم!');
+            message.channel.send('✅ تم إنشاء روماتك الخاصة وترتيبها بنجاح يا ملك!');
         } catch (error) {
             console.error(error);
-            message.reply('❌ حدث خطأ أثناء محاولة تعديل الرومات.');
+            message.reply('❌ حدث خطأ أثناء إنشاء الرومات.');
         }
     }
 
+    // 3. أمر التذاكر الفاخر: !ticket
     if (message.content === '!ticket') {
         if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return message.reply('❌ هذا الأمر خاص بالمسؤولين فقط!');
@@ -130,6 +126,7 @@ client.on('messageCreate', async message => {
     }
 });
 
+// نظام الأزرار للتذاكر بدون أخطاء
 client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
 
@@ -172,10 +169,7 @@ client.on('interactionCreate', async interaction => {
 
     if (interaction.customId === 'close_ticket') {
         try {
-            // الرد الفوري لمنع خطأ التفاعل المجهول
             await interaction.reply({ content: '🔒 جاري إغلاق التذكرة وحذف الروم...', ephemeral: true });
-            
-            // حذف الروم مباشرة بعد الرد
             setTimeout(() => {
                 interaction.channel.delete().catch(() => {});
             }, 1000);
