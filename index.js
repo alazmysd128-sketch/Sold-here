@@ -4,7 +4,7 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
 
-const TOKEN = 'MTU2NDc1NDY1MTYxMjU4NjAyNQ.GA3bMY.jUAlZaT4HFR2u0OJN0gpykFMk5L3V5icOlL0TM';
+const TOKEN = 'MTU2NDc1NDY1MTYxMjU4NjAyNQ.GVvPCs.nLieH4JyzgPQ1.Er2STx6A4aQ8Gh4P-5Zml7Po';
 
 client.once('ready', async () => {
     console.log(`🔥 Bot is online: ${client.user.tag}`);
