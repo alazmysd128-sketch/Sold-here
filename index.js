@@ -14,14 +14,12 @@ const TOKEN = process.env.TOKEN;
 client.once('ready', async () => {
     console.log(`🔥 Bot is online: ${client.user.tag}`);
     
-    // ضبط حالة البوت (Activity)
     client.user.setPresence({
-        activities: [{ name: 'خدمة سولد الفاخرة 🚀', type: 3 }], // 3 تعني Watching
+        activities: [{ name: 'خدمة سولد الفاخرة 🚀', type: 3 }],
         status: 'online',
     });
 });
 
-// 1. نظام الترحيب بالاعضاء الجدد وعمل روم خاص
 client.on('guildMemberAdd', async member => {
     const welcomeChannel = member.guild.channels.cache.find(channel => channel.name === 'welcome' || channel.name === 'الترحيب');
     if (!welcomeChannel) return;
@@ -36,11 +34,9 @@ client.on('guildMemberAdd', async member => {
     welcomeChannel.send({ embeds: [embed] });
 });
 
-// 2. أوامر تفاعلية (Commands)
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
-    // أمر إنشاء روم رسمي (مثال: !makerom اسم-الروم)
     if (message.content.startsWith('!makerom')) {
         if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return message.reply('❌ ما عندك صلاحية لإدارة الرومات يا بطل!');
@@ -60,14 +56,13 @@ client.on('messageCreate', async message => {
                 type: ChannelType.GuildText,
             });
 
-            message.channel.endswith?.() || message.reply(`✅ تم إنشاء الروم بنجاح: ${newChannel}`);
+            message.reply(`✅ تم إنشاء الروم بنجاح: ${newChannel}`);
         } catch (error) {
             console.error(error);
             message.reply('❌ صار خطأ أثناء إنشاء الروم.');
         }
     }
 
-    // أمر لوحة التذاكر (Ticket System) الفاخرة بالأزرار
     if (message.content === '!ticket') {
         if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return message.reply('❌ هذا الأمر خاص بالمسؤولين فقط!');
@@ -84,13 +79,12 @@ client.on('messageCreate', async message => {
         const embed = new EmbedBuilder()
             .setColor('#5865F2')
             .setTitle('🎫 نظام الدعم الفني والتذاكر')
-            .setDescription('اضغط على الزر بالأسفل لفتح تكرة خاصة ودعمك فوراً!');
+            .setDescription('اضغط على الزر بالأسفل لفتح تذكرة خاصة ودعمك فوراً!');
 
         await message.channel.send({ embeds: [embed], components: [row] });
     }
 });
 
-// التفاعل مع زر التذاكر
 client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
 
@@ -99,7 +93,6 @@ client.on('interactionCreate', async interaction => {
         const userName = interaction.user.username;
 
         try {
-            // إنشاء روم خاص للتذكرة
             const ticketChannel = await guild.channels.create({
                 name: `ticket-${userName}`,
                 type: ChannelType.GuildText,
@@ -139,18 +132,6 @@ client.on('interactionCreate', async interaction => {
             channel.delete().catch(() => {});
         }, 3000);
     }
-});
-
-client.login(TOKEN);const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes, PermissionFlagsBits } = require('discord.js');
-
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
-});
-
-const TOKEN = process.env.TOKEN;
-
-client.once('ready', async () => {
-    console.log(`🔥 Bot is online: ${client.user.tag}`);
 });
 
 client.login(TOKEN);
