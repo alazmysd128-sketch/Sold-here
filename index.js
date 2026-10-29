@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits }  = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -14,167 +14,82 @@ const TOKEN = process.env.TOKEN;
 client.once('ready', async () => {
     console.log(`🔥 Bot is online: ${client.user.tag}`);
     client.user.setPresence({
-        activities: [{ name: 'تحكم سولد الملكي 🚀', type: 3 }],
+        activities: [{ name: 'إدارة سيرفرات لولو 🚀', type: 3 }],
         status: 'online',
     });
-});
-
-client.on('guildMemberAdd', async member => {
-    const welcomeChannel = member.guild.channels.cache.find(channel => channel.name === 'welcome' || channel.name === 'الترحيب');
-    if (!welcomeChannel) return;
-
-    const embed = new EmbedBuilder()
-        .setColor('#00FFCC')
-        .setTitle('🎉 حياك الله يا بطل في السيرفر!')
-        .setDescription(`نورتنا يا ${member}، نتمنى لك أوقات ممتعة معنا في السيرفر!`)
-        .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
-        .setTimestamp();
-
-    welcomeChannel.send({ embeds: [embed] });
 });
 
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
-    // 1. أمر إنشاء روم مفرد على كيفك: !makerom اسم-الروم
-    if (message.content.startsWith('!makerom')) {
-        if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
-            return message.reply('❌ ما عندك صلاحية لإدارة الرومات يا بطل!');
-        }
-
-        const args = message.content.split(' ');
-        const roomName = args.slice(1).join('-');
-
-        if (!roomName) {
-            return message.reply('⚠️ اكتب اسم الروم بعد الأمر، مثلاً: `!makerom لوجي`');
-        }
-
-        try {
-            const guild = message.guild;
-            const newChannel = await guild.channels.create({
-                name: roomName,
-                type: ChannelType.GuildText,
-            });
-
-            message.reply(`✅ تم إنشاء الروم بنجاح: ${newChannel}`);
-        } catch (error) {
-            console.error(error);
-            message.reply('❌ صار خطأ أثناء إنشاء الروم.');
-        }
-    }
-
-    // 2. أمر السيت أب بالأسماء اللي تختارها أنت!
-    // الطريقة: اكتب !setup بعدين حط الأسامي مفصولة بمسافة، مثلاً:
-    // !setup قوانين ترحيب سوالف
-    if (message.content.startsWith('!setup')) {
+    // 1. أمر عرض قائمة كافة السيرفرات التي يملك فيها البوت صلاحية: !servers
+    if (message.content === '!servers') {
         if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return message.reply('❌ هذا الأمر خاص بالمسؤولين فقط!');
         }
 
-        const args = message.content.split(' ').slice(1); // ناخذ الأسماء اللي كتبتها بعد !setup
+        const guilds = client.guilds.cache.map(g => `• **${g.name}** (ID: \`${g.id}\`) - الأعضاء: ${g.memberCount}`);
+        
+        const embed = new EmbedBuilder()
+            .setColor('#5865F2')
+            .setTitle('🌐 قائمة السيرفرات المتصلة بالبوت')
+            .setDescription(guilds.join('\n') || 'لا يوجد سيرفرات حالياً.')
+            .setFooter({ text: `إجمالي السيرفرات: ${client.guilds.cache.size}` });
 
-        if (args.length === 0) {
-            return message.reply('⚠️ يرجى كتابة أسماء الرومات بعد الأمر يا فخم!\nمثال: `!setup قوانين الترحيب السوالف`');
+        return message.reply({ embeds: [embed] });
+    }
+
+    // 2. أمر إنشاء رومات مخصصة لسيرفر فايف ام (FiveM): !setup-fivem
+    if (message.content === '!setup-fivem') {
+        if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            return message.reply('❌ هذا الأمر خاص بالمسؤولين فقط!');
         }
 
         try {
             const guild = message.guild;
-            message.reply(`⏳ جاري إنشاء قسم خاص وروماتك المطلوبة (${args.join(', ')})...`);
+            message.reply('⏳ جاري تجهيز سيرفر FiveM الخرافي...');
 
-            // إنشاء قسم خاص يجمع روماتك
             const category = await guild.channels.create({
-                name: '🌟 ┫ رومات سولد المختارة',
+                name: '🚗 ┫ منطقة FIVEM',
                 type: ChannelType.GuildCategory,
             });
 
-            // إنشاء الرومات بالأسماء اللي أنت حددتها حرفياً
-            for (const name of args) {
-                await guild.channels.create({
-                    name: name,
-                    type: ChannelType.GuildText,
-                    parent: category.id,
-                });
-            }
+            await guild.channels.create({ name: '📜-قوانين-المدينة', type: ChannelType.GuildText, parent: category.id });
+            await guild.channels.create({ name: '📢-أخبار-المدينة', type: ChannelType.GuildText, parent: category.id });
+            await guild.channels.create({ name: '📝-تقديم-الكلان', type: ChannelType.GuildText, parent: category.id });
+            await guild.channels.create({ name: '🔊 ┫ روم الانتظار', type: ChannelType.GuildVoice, parent: category.id });
 
-            message.channel.send('✅ تم إنشاء روماتك الخاصة وترتيبها بنجاح يا ملك!');
+            message.channel.send('✅ تم إعداد رومات FiveM بنجاح!');
         } catch (error) {
             console.error(error);
-            message.reply('❌ حدث خطأ أثناء إنشاء الرومات.');
+            message.reply('❌ حدث خطأ أثناء تجهيز الرومات.');
         }
     }
 
-    // 3. أمر التذاكر الفاخر: !ticket
-    if (message.content === '!ticket') {
+    // 3. أمر إنشاء رومات مخصصة لسيرفر عام: !setup-general
+    if (message.content === '!setup-general') {
         if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
             return message.reply('❌ هذا الأمر خاص بالمسؤولين فقط!');
         }
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('create_ticket')
-                    .setLabel('🎫 فتح تذاكر جديدة')
-                    .setStyle(ButtonStyle.Success),
-            );
-
-        const embed = new EmbedBuilder()
-            .setColor('#5865F2')
-            .setTitle('🎫 نظام الدعم الفني والتذاكر')
-            .setDescription('اضغط على الزر بالأسفل لفتح تذكرة خاصة ودعمك فوراً!');
-
-        await message.channel.send({ embeds: [embed], components: [row] });
-    }
-});
-
-// نظام الأزرار للتذاكر بدون أخطاء
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isButton()) return;
-
-    if (interaction.customId === 'create_ticket') {
-        const guild = interaction.guild;
-        const userName = interaction.user.username;
-
         try {
-            const ticketChannel = await guild.channels.create({
-                name: `ticket-${userName}`,
-                type: ChannelType.GuildText,
-                permissionOverwrites: [
-                    {
-                        id: guild.id,
-                        deny: [PermissionFlagsBits.ViewChannel],
-                    },
-                    {
-                        id: interaction.user.id,
-                        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
-                    },
-                ],
+            const guild = message.guild;
+            message.reply('⏳ جاري تجهيز السيرفر العام...');
+
+            const category = await guild.channels.create({
+                name: '💬 ┫ المجتمع العام',
+                type: ChannelType.GuildCategory,
             });
 
-            await interaction.reply({ content: `✅ تم فتح تذكرتك بنجاح: ${ticketChannel}`, ephemeral: true });
-            
-            const closeRow = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('close_ticket')
-                        .setLabel('🔒 إغلاق التذكرة')
-                        .setStyle(ButtonStyle.Danger),
-                );
+            await guild.channels.create({ name: '🎉-الترحيب', type: ChannelType.GuildText, parent: category.id });
+            await guild.channels.create({ name: '💬-سوالف', type: ChannelType.GuildText, parent: category.id });
+            await guild.channels.create({ name: '📸-صور-وميمز', type: ChannelType.GuildText, parent: category.id });
+            await guild.channels.create({ name: '🎧 ┫ ديوانية', type: ChannelType.GuildVoice, parent: category.id });
 
-            ticketChannel.send({ content: `أهلاً بك ${interaction.user}، الإدارة راح ترد عليك قريب.`, components: [closeRow] });
+            message.channel.send('✅ تم إعداد السيرفر العام بنجاح!');
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: `❌ حدث خطأ أثناء إنشاء التذكرة.`, ephemeral: true });
-        }
-    }
-
-    if (interaction.customId === 'close_ticket') {
-        try {
-            await interaction.reply({ content: '🔒 جاري إغلاق التذكرة وحذف الروم...', ephemeral: true });
-            setTimeout(() => {
-                interaction.channel.delete().catch(() => {});
-            }, 1000);
-        } catch (error) {
-            console.error(error);
+            message.reply('❌ حدث خطأ أثناء تجهيز الرومات.');
         }
     }
 });
