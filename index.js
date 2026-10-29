@@ -4,7 +4,7 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
 
-const TOKEN = 'MTU2NDc1NDY1MTYxMjU4NjAyNQ.GAwRTh.Vo9LwhSDY6_rf9x0EfD8AONdWwPMZOvSUTKgZY';
+const TOKEN = 'MTU2NDc1NDY1MTYxMjU4NjAyNQ.GA3bMY.jUAlZaT4HFR2u0OJN0gpykFMk5L3V5icOlL0TM';
 const CLIENT_ID = '1564754651612586025';
 const GUILD_ID = '1344426577366302791'; // أيدي سيرفرك الحالي
 
