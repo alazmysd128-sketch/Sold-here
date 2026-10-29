@@ -46,7 +46,7 @@ client.on('messageCreate', async message => {
         const roomName = args.slice(1).join('-');
 
         if (!roomName) {
-            return message.reply('⚠️ اكتب اسم الروم بعد الأمر، مثلاً: `!makerom لوجي`');
+            return message.reply('⚠️ اكتب اسم الروم بعد الأمر، مثلاً: `!makerom سوالف`');
         }
 
         try {
@@ -60,6 +60,51 @@ client.on('messageCreate', async message => {
         } catch (error) {
             console.error(error);
             message.reply('❌ صار خطأ أثناء إنشاء الروم.');
+        }
+    }
+
+    if (message.content === '!setup') {
+        if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            return message.reply('❌ هذا الأمر خاص بالمسؤولين (أدمن) فقط!');
+        }
+
+        try {
+            const guild = message.guild;
+            message.reply('⏳ جاري إنشاء رومات وأقسام السيرفر الفاخرة...');
+
+            const category = await guild.channels.create({
+                name: '🌟 ┫ منطقة سولد الخاصة',
+                type: ChannelType.GuildCategory,
+            });
+
+            await guild.channels.create({
+                name: '📢-الأنظباط-والقوانين',
+                type: ChannelType.GuildText,
+                parent: category.id,
+            });
+
+            await guild.channels.create({
+                name: '🎉-الترحيب',
+                type: ChannelType.GuildText,
+                parent: category.id,
+            });
+
+            await guild.channels.create({
+                name: '💬-سوالف-الشباب',
+                type: ChannelType.GuildText,
+                parent: category.id,
+            });
+
+            await guild.channels.create({
+                name: '🎧 ┫ سولف صوتي',
+                type: ChannelType.GuildVoice,
+                parent: category.id,
+            });
+
+            message.channel.send('✅ تم تعديل وترتيب السيرفر وإنشاء الرومات بنجاح يا فخم!');
+        } catch (error) {
+            console.error(error);
+            message.reply('❌ حدث خطأ أثناء محاولة تعديل الرومات.');
         }
     }
 
@@ -121,16 +166,22 @@ client.on('interactionCreate', async interaction => {
             ticketChannel.send({ content: `أهلاً بك ${interaction.user}، الإدارة راح ترد عليك قريب.`, components: [closeRow] });
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: '❌ حدث خطأ أثناء إنشاء التذكرة.', ephemeral: true });
+            await interaction.reply({ content: `❌ حدث خطأ أثناء إنشاء التذكرة.`, ephemeral: true });
         }
     }
 
     if (interaction.customId === 'close_ticket') {
-        const channel = interaction.channel;
-        await interaction.reply('🔒 جاري إغلاق التذكرة وحذف الروم...');
-        setTimeout(() => {
-            channel.delete().catch(() => {});
-        }, 3000);
+        try {
+            // الرد الفوري لمنع خطأ التفاعل المجهول
+            await interaction.reply({ content: '🔒 جاري إغلاق التذكرة وحذف الروم...', ephemeral: true });
+            
+            // حذف الروم مباشرة بعد الرد
+            setTimeout(() => {
+                interaction.channel.delete().catch(() => {});
+            }, 1000);
+        } catch (error) {
+            console.error(error);
+        }
     }
 });
 
